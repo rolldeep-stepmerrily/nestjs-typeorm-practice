@@ -1,20 +1,18 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, NotFoundException } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-
-import { CustomHttpException, GLOBAL_ERRORS } from '@@exceptions';
 
 @ApiExcludeController()
 @Controller()
 export class AppController {
   constructor(@Inject('NODE_ENV') private NODE_ENV: string) {}
 
-  @Get('version-log')
-  async versionLog() {
+  @Get('changelog')
+  async changelog(): Promise<string> {
     if (this.NODE_ENV !== 'development') {
-      throw new CustomHttpException(GLOBAL_ERRORS.VERSION_LOG_NOT_FOUND);
+      throw new NotFoundException();
     }
 
     const filePath = join(__dirname, '..', 'swagger', 'swagger-version-log.md');

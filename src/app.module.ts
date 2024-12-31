@@ -6,7 +6,8 @@ import Joi from 'joi';
 import { AppController } from './app.controller';
 import { ConfigProviderModule } from './common/config-provider';
 import { HttpLoggerMiddleware } from './common/middlewares';
-import { PrismaModule } from './prisma/prisma.module';
+import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,18 +16,22 @@ import { PrismaModule } from './prisma/prisma.module';
         SERVER_URL: Joi.string().required(),
         NODE_ENV: Joi.string().valid('development', 'production').default('development'),
         PORT: Joi.number().default(3000),
-        DATABASE_URL: Joi.string().required(),
+        MYSQL_ROOT_PASSWORD: Joi.string().required(),
+        MYSQL_DATABASE: Joi.string().required(),
+        MYSQL_HOST: Joi.string().required(),
+        MYSQL_PORT: Joi.number().required(),
+        MYSQL_USERNAME: Joi.string().required(),
+        MYSQL_PASSWORD: Joi.string().required(),
         ADMIN_NAME: Joi.string().required(),
         ADMIN_PASSWORD: Joi.string().required(),
-        GUEST_NAME: Joi.string().required(),
-        GUEST_PASSWORD: Joi.string().required(),
       }),
       isGlobal: true,
       envFilePath: '.env',
       validationOptions: { abortEarly: true },
     }),
-    PrismaModule,
     ConfigProviderModule,
+    DatabaseModule,
+    UsersModule,
   ],
   controllers: [AppController],
 })

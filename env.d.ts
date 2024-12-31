@@ -3,10 +3,13 @@ declare namespace NodeJS {
     SERVER_URL: string;
     NODE_ENV: 'development' | 'production';
     PORT: number;
-    DATABASE_URL: string;
+    MYSQL_ROOT_PASSWORD: string;
+    MYSQL_DATABASE: string;
+    MYSQL_HOST: string;
+    MYSQL_PORT: number;
+    MYSQL_USERNAME: string;
+    MYSQL_PASSWORD: string;
     ADMIN_NAME: string;
     ADMIN_PASSWORD: string;
-    GUEST_NAME: string;
-    GUEST_PASSWORD: string;
   }
 }

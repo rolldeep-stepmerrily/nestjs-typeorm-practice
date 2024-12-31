@@ -8,7 +8,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import * as express from 'express';
-import expressBasicAuth from 'express-basic-auth';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -43,11 +42,6 @@ async function bootstrap() {
     app.useStaticAssets(join(__dirname, '..', 'swagger'), { prefix: '/swagger/' });
 
     const updateInfo = fs.readFileSync(join(__dirname, '..', 'swagger', 'swagger-info.md'), 'utf8');
-
-    const GUEST_NAME = configService.getOrThrow<string>('GUEST_NAME');
-    const GUEST_PASSWORD = configService.getOrThrow<string>('GUEST_PASSWORD');
-
-    app.use(['/docs', '/docs-json'], expressBasicAuth({ challenge: true, users: { [GUEST_NAME]: GUEST_PASSWORD } }));
 
     const config = new DocumentBuilder()
       .setDescription(updateInfo)

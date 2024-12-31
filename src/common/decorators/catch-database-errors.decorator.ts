@@ -1,4 +1,4 @@
-import { CustomHttpException, GLOBAL_ERRORS } from '@@exceptions';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export const CatchDatabaseErrors = () => {
   return (target: any) => {
@@ -9,7 +9,7 @@ export const CatchDatabaseErrors = () => {
       const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
 
       if (!descriptor || typeof descriptor.value !== 'function') {
-        throw new CustomHttpException(GLOBAL_ERRORS.UNKNOWN_ERROR);
+        throw new InternalServerErrorException();
       }
 
       const originalMethod = descriptor.value;
@@ -20,7 +20,7 @@ export const CatchDatabaseErrors = () => {
         } catch (e) {
           console.error(e);
 
-          throw new CustomHttpException(GLOBAL_ERRORS.DATABASE_ERROR);
+          throw new InternalServerErrorException();
         }
       };
 
