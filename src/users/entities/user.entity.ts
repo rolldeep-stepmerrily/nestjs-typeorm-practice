@@ -1,20 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsEnum, IsNotEmpty, IsPositive, IsString, Length, Matches } from 'class-validator';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { IsEnum, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 
-enum ERole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-}
+import { AbstractEntity } from 'src/database';
+import { Post } from 'src/posts/entities';
+
+import { ERole } from '../users.interface';
 
 @Entity()
-export class User {
-  @ApiProperty({ description: 'user ID' })
-  @IsPositive()
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class User extends AbstractEntity<User> {
   @ApiProperty({ description: 'user username' })
   @IsString()
   @IsNotEmpty()
@@ -35,16 +30,9 @@ export class User {
   @Column({ type: 'enum', enum: ERole, default: ERole.USER })
   role: ERole;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @OneToMany(() => Post, (post) => post.user, { cascade: true })
+  posts: Post[];
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
-
-  constructor(user: Partial<User>) {
-    Object.assign(this, user);
-  }
+  @ManyToMany(() => Post, (post) => post.likes)
+  likedPosts: Post[];
 }

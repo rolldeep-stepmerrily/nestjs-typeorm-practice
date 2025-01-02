@@ -64,8 +64,6 @@ async function bootstrap() {
     });
   }
 
-  const PORT = configService.getOrThrow<number>('PORT');
-
-  await app.listen(PORT);
+  await app.listen(configService.getOrThrow<number>('PORT'));
 }
 bootstrap();

@@ -6,7 +6,8 @@ import Joi from 'joi';
 import { AppController } from './app.controller';
 import { ConfigProviderModule } from './common/config-provider';
 import { HttpLoggerMiddleware } from './common/middlewares';
-import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database';
+import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
         MYSQL_PASSWORD: Joi.string().required(),
         ADMIN_NAME: Joi.string().required(),
         ADMIN_PASSWORD: Joi.string().required(),
+        JWT_SECRET_KEY: Joi.string().required(),
       }),
       isGlobal: true,
       envFilePath: '.env',
@@ -32,6 +34,7 @@ import { UsersModule } from './users/users.module';
     ConfigProviderModule,
     DatabaseModule,
     UsersModule,
+    PostsModule,
   ],
   controllers: [AppController],
 })

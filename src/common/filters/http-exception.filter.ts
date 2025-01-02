@@ -36,12 +36,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
 
-    const message = isUnAuthorized ? 'Unauthorized key' : error.message || 'UNDEFINED_ERROR_MESSAGE';
-
     return response.status(statusCode).json({
       statusCode,
+      message: error.message,
       errorCode,
-      message,
       timestamp: new Date().toISOString(),
     });
   }

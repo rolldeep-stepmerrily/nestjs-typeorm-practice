@@ -1,6 +1,13 @@
 ### Changelog
 
 
+#### 1.0.2
+
+1. Repository 패턴 수정
+2. Post Module 추가
+
+----
+
 #### 1.0.1
 
 1. 유저 생성 API 추가
