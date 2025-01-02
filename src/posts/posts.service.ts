@@ -1,9 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { EntityManager, IsNull, Repository } from 'typeorm';
 
-import { CustomHttpException } from '@@exceptions';
+import { CustomHttpException, GLOBAL_ERRORS } from '@@exceptions';
 
 import { User } from 'src/users/entities';
 
@@ -78,11 +78,7 @@ export class PostsService {
     });
 
     if (!foundPost) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        errorCode: 'E0009',
-        message: 'post not found',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.POST_NOT_FOUND);
     }
 
     return {
@@ -100,19 +96,11 @@ export class PostsService {
     const post = await this.postsRepository.findOne({ where: { id: postId, deletedAt: IsNull() } });
 
     if (!post) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        errorCode: 'E0009',
-        message: 'post not found',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.POST_NOT_FOUND);
     }
 
     if (post.user.id !== userId) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.FORBIDDEN,
-        errorCode: 'E0008',
-        message: 'forbidden',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.FORBIDDEN);
     }
 
     await this.postsRepository.update(postId, updatePostRequestDto);
@@ -122,19 +110,11 @@ export class PostsService {
     const post = await this.postsRepository.findOne({ where: { id: postId, deletedAt: IsNull() } });
 
     if (!post) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        errorCode: 'E0009',
-        message: 'post not found',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.POST_NOT_FOUND);
     }
 
     if (post.user.id !== userId) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.FORBIDDEN,
-        errorCode: 'E0008',
-        message: 'forbidden',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.FORBIDDEN);
     }
 
     await this.postsRepository.softDelete(postId);
@@ -147,11 +127,7 @@ export class PostsService {
     });
 
     if (!post) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        errorCode: 'E0009',
-        message: 'post not found',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.POST_NOT_FOUND);
     }
 
     const isLike = post.likes.some((like) => like.id === userId);

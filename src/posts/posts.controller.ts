@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { ApiExceptionResponse } from 'nestjs-swagger-api-exception-response';
 
 import { User } from '@@decorators';
+import { GLOBAL_ERRORS } from '@@exceptions';
 import { ParsePositiveIntPipe } from '@@pipes';
 
 import { CreatePostRequestDto, UpdatePostRequestDto } from './dto/posts.request.dto';
@@ -41,7 +42,7 @@ export class PostsController {
 
   @ApiOperation({ summary: 'find detailed post' })
   @ApiResponse({ type: FindDetailedPostResponseDto, status: HttpStatus.OK, description: 'post found success' })
-  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [{ message: 'post not found', errorCode: 'E0009' }])
+  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [GLOBAL_ERRORS.POST_NOT_FOUND])
   @Get(':postId')
   async findDetailedPost(@Param('postId', ParsePositiveIntPipe) postId: number): Promise<FindDetailedPostResponseDto> {
     return await this.postsService.findDetailedPost(postId);
@@ -49,8 +50,8 @@ export class PostsController {
 
   @ApiOperation({ summary: 'update post' })
   @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'update post success' })
-  @ApiExceptionResponse(HttpStatus.FORBIDDEN, [{ message: 'forbidden', errorCode: 'E0008' }])
-  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [{ message: 'post not found', errorCode: 'E0009' }])
+  @ApiExceptionResponse(HttpStatus.FORBIDDEN, [GLOBAL_ERRORS.FORBIDDEN])
+  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [GLOBAL_ERRORS.POST_NOT_FOUND])
   @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('access'))
   @Put(':postId')
@@ -64,8 +65,8 @@ export class PostsController {
 
   @ApiOperation({ summary: 'delete post' })
   @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'delete post success' })
-  @ApiExceptionResponse(HttpStatus.FORBIDDEN, [{ message: 'forbidden', errorCode: 'E0008' }])
-  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [{ message: 'post not found', errorCode: 'E0009' }])
+  @ApiExceptionResponse(HttpStatus.FORBIDDEN, [GLOBAL_ERRORS.FORBIDDEN])
+  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [GLOBAL_ERRORS.POST_NOT_FOUND])
   @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('access'))
   @Delete(':postId')
@@ -75,7 +76,7 @@ export class PostsController {
 
   @ApiOperation({ summary: 'like post' })
   @ApiResponse({ type: LikePostResponseDto, status: HttpStatus.OK, description: 'like post success' })
-  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [{ message: 'post not found', errorCode: 'E0009' }])
+  @ApiExceptionResponse(HttpStatus.NOT_FOUND, [GLOBAL_ERRORS.POST_NOT_FOUND])
   @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('access'))
   @Patch(':postId')

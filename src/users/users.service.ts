@@ -1,11 +1,11 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { EntityManager, Repository } from 'typeorm';
 
-import { CustomHttpException } from '@@exceptions';
+import { CustomHttpException, GLOBAL_ERRORS } from '@@exceptions';
 
 import { CreateUserRequestDto, SignInRequestDto } from './dto/users.request.dto';
 import { CreateUserResponseDto, SignInResponseDto } from './dto/users.response.dto';
@@ -36,11 +36,7 @@ export class UsersService {
     const findUser = await this.findUserByUsername(createUserRequestDto.username);
 
     if (findUser) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.CONFLICT,
-        message: 'username already exists',
-        errorCode: 'E0002',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.USERNAME_ALREADY_EXISTS);
     }
 
     const hashedPassword = await bcrypt.hash(createUserRequestDto.password, 10);
@@ -56,20 +52,12 @@ export class UsersService {
     const foundUser = await this.findUserByUsername(username);
 
     if (!foundUser) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'user not found',
-        errorCode: 'E0004',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.USER_NOT_FOUND);
     }
 
     const isValidPassword = await bcrypt.compare(password, foundUser.password);
     if (!isValidPassword) {
-      throw new CustomHttpException({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'invalid password',
-        errorCode: 'E0005',
-      });
+      throw new CustomHttpException(GLOBAL_ERRORS.INVALID_PASSWORD);
     }
 
     const { id } = foundUser;
