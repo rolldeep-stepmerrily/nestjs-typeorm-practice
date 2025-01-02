@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
+
+import { CustomHttpException } from '@@exceptions';
 
 import { User } from 'src/users/entities';
 
-import { CreatePostRequestDto } from './dto/posts.request.dto';
-import { CreatePostResponseDto, FindDetailedPostResponseDto, FindPostsResponseDto } from './dto/posts.response.dto';
+import { CreatePostRequestDto, UpdatePostRequestDto } from './dto/posts.request.dto';
+import {
+  CreatePostResponseDto,
+  FindDetailedPostResponseDto,
+  FindPostsResponseDto,
+  LikePostResponseDto,
+} from './dto/posts.response.dto';
 import { Post } from './entities';
 
 @Injectable()
@@ -19,11 +26,28 @@ export class PostsService {
 
   async findPosts(): Promise<FindPostsResponseDto> {
     const posts = await this.postsRepository.find({
-      relations: ['user'],
-      select: { id: true, title: true, likes: true, views: true, createdAt: true, user: { id: true, username: true } },
+      where: { deletedAt: IsNull() },
+      relations: ['user', 'likes'],
+      select: {
+        id: true,
+        title: true,
+        likes: { id: true },
+        views: true,
+        createdAt: true,
+        user: { id: true, username: true },
+      },
     });
 
-    return { posts };
+    const postsWithLikesCount = posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      views: post.views,
+      createdAt: post.createdAt,
+      user: post.user,
+      likesCount: post.likes.length,
+    }));
+
+    return { posts: postsWithLikesCount };
   }
 
   async createPost(userId: number, createPostRequestDto: CreatePostRequestDto): Promise<CreatePostResponseDto> {
@@ -39,18 +63,107 @@ export class PostsService {
   }
 
   async findDetailedPost(postId: number): Promise<FindDetailedPostResponseDto> {
-    return await this.postsRepository.findOneOrFail({
-      where: { id: postId },
-      relations: ['user'],
+    const foundPost = await this.postsRepository.findOne({
+      where: { id: postId, deletedAt: IsNull() },
+      relations: ['user', 'likes'],
       select: {
         id: true,
         title: true,
         content: true,
-        likes: true,
+        likes: { id: true },
         views: true,
         createdAt: true,
         user: { id: true, username: true },
       },
     });
+
+    if (!foundPost) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: 'E0009',
+        message: 'post not found',
+      });
+    }
+
+    return {
+      id: foundPost.id,
+      title: foundPost.title,
+      content: foundPost.content,
+      views: foundPost.views,
+      createdAt: foundPost.createdAt,
+      user: foundPost.user,
+      likesCount: foundPost.likes.length,
+    };
+  }
+
+  async updatePost(userId: number, postId: number, updatePostRequestDto: UpdatePostRequestDto): Promise<void> {
+    const post = await this.postsRepository.findOne({ where: { id: postId, deletedAt: IsNull() } });
+
+    if (!post) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: 'E0009',
+        message: 'post not found',
+      });
+    }
+
+    if (post.user.id !== userId) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.FORBIDDEN,
+        errorCode: 'E0008',
+        message: 'forbidden',
+      });
+    }
+
+    await this.postsRepository.update(postId, updatePostRequestDto);
+  }
+
+  async deletePost(userId: number, postId: number): Promise<void> {
+    const post = await this.postsRepository.findOne({ where: { id: postId, deletedAt: IsNull() } });
+
+    if (!post) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: 'E0009',
+        message: 'post not found',
+      });
+    }
+
+    if (post.user.id !== userId) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.FORBIDDEN,
+        errorCode: 'E0008',
+        message: 'forbidden',
+      });
+    }
+
+    await this.postsRepository.softDelete(postId);
+  }
+
+  async likePost(userId: number, postId: number): Promise<LikePostResponseDto> {
+    const post = await this.postsRepository.findOne({
+      where: { id: postId, deletedAt: IsNull() },
+      relations: ['likes'],
+    });
+
+    if (!post) {
+      throw new CustomHttpException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: 'E0009',
+        message: 'post not found',
+      });
+    }
+
+    const isLike = post.likes.some((like) => like.id === userId);
+
+    if (isLike) {
+      post.likes = post.likes.filter((like) => like.id !== userId);
+    } else {
+      post.likes.push(new User({ id: userId }));
+    }
+
+    await this.postsRepository.save(post);
+
+    return { isLike: !isLike };
   }
 }
