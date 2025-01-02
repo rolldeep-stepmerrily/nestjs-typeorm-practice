@@ -1,5 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
 
+interface IDetailedError {
+  statusCode: HttpStatus;
+  message: string;
+  errorCode: string;
+}
+
+interface IError {
+  [key: string]: IDetailedError;
+}
+
 export const GLOBAL_ERRORS = {
   INTERNAL_SERVER_ERROR: {
     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -46,4 +56,4 @@ export const GLOBAL_ERRORS = {
     message: 'withdrawal user',
     errorCode: 'E0008',
   },
-};
+} as const satisfies IError;
